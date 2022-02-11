@@ -100,12 +100,12 @@ class State:
 
     @staticmethod
     def epsilon_closure_by_state(*states):
-        closure = { state for state in states }
+        closure = set(states)
 
         l = 0
         while l != len(closure):
             l = len(closure)
-            tmp = [s for s in closure]
+            tmp = list(closure)
             for s in tmp:
                 for epsilon_state in s.epsilon_transitions:
                         closure.add(epsilon_state)

@@ -34,21 +34,16 @@ def z_start():
         for cond in dayling:
             if cond():
                 dayling[cond]()
-        end = False
-        for cond in ends:
-            if cond():
-                end = True
-                break
-        if end:
+        if end := any(cond() for cond in ends):
             break 
         
 
 def z_write(document_name, text):
     path =  os.getcwd() + '/output'
 
-    file_name = document_name + ".txt"
+    file_name = f'{document_name}.txt'
 
-    with open(path + '/' + file_name, "a") as file:
+    with open(f'{path}/{file_name}', "a") as file:
         file.write("\n"+text)
 
 def z_redimention(rows, columns):
@@ -117,25 +112,25 @@ def z_multiplication(left, right):
 def z_addLand(land, row, column):
     check = Check_Valid_Positions(row, column)
     if check != None:
-        raise Exception(check + ". Land cannot be added")
+        raise Exception(f'{check}. Land cannot be added')
     sim.Add_Land_Copy(land, row, column)
 
 def z_deleteLand(row, column):
     check = Check_Valid_Positions(row, column)
     if check != None:
-        raise Exception(check + ". Land cannot be deleted")
+        raise Exception(f'{check}. Land cannot be deleted')
     sim.Reset_Land(row, column)
 
 def z_addSociety(society, row, column):
     check = Check_Valid_Positions(row, column)
     if check != None:
-        raise Exception(check + ". Society cannot be added")
+        raise Exception(f'{check}. Society cannot be added')
     sim.Add_Society_Copy(society, row, column)
 
 def z_deleteSociety(society, row, column):
     check = Check_Valid_Positions(row, column)
     if check != None:
-        raise Exception(check + ". Society cannot be added")
+        raise Exception(f'{check}. Society cannot be added')
     sim.Delete_Society(society.name, row, column)
     
 def z_addSpecies(species):
@@ -151,7 +146,7 @@ def z_addDependence(pos_1, entity_1_name, characteristic_1_name,
         raise Exception(check + ". Dependence cannot be added")
     check = Check_Valid_Positions(pos_2[0], pos_2[1])
     if check != None:
-        raise Exception(check + ". Dependence cannot be added")
+        raise Exception(f'{check}. Dependence cannot be added')
     if len(c) == 1:
         c = c[0]
     sim.Add_Inter_Dependence(pos_1, entity_1_name, characteristic_1_name,
@@ -164,7 +159,7 @@ def z_deleteDependence(pos_1, entity_1_name, characteristic_1_name,
         raise Exception(check + ". Dependence cannot be deleted")
     check = Check_Valid_Positions(pos_2[0], pos_2[1])
     if check != None:
-        raise Exception(check + ". Dependence cannot be deleted")
+        raise Exception(f'{check}. Dependence cannot be deleted')
 
     sim.Delete_Inter_Dependence(pos_1, entity_1_name, characteristic_1_name,
                                 pos_2, entity_2_name, characteristic_2_name)
@@ -176,7 +171,7 @@ def z_addInfluence(pos_1, entity_1_name, characteristic_1_name,
         raise Exception(check + ". Influence cannot be added")
     check = Check_Valid_Positions(pos_2[0], pos_2[1])
     if check != None:
-        raise Exception(check + ". Influence cannot be added")
+        raise Exception(f'{check}. Influence cannot be added')
     if len(c) == 1:
         c = c[0]
     sim.Add_Land_Influences(pos_1, entity_1_name, characteristic_1_name,
@@ -189,7 +184,7 @@ def z_deleteInfluence(pos_1, entity_1_name, characteristic_1_name,
         raise Exception(check + ". Influence cannot be deleted")
     check = Check_Valid_Positions(pos_2[0], pos_2[1])
     if check != None:
-        raise Exception(check + ". Influence cannot be deleted")
+        raise Exception(f'{check}. Influence cannot be deleted')
 
     sim.Delete_Land_Influences(pos_1, entity_1_name, characteristic_1_name,
                                pos_2, entity_2_name, characteristic_2_name)
@@ -209,7 +204,7 @@ def z_booleanToString(boolean):
 def z_getCharacteristic(pos, entity, name):
     check = Check_Valid_Positions(pos[0], pos[1])
     if check != None:
-        raise Exception(check + ". Dependence cannot be added")
+        raise Exception(f'{check}. Dependence cannot be added')
     if entity in sim.map[pos[0]][pos[1]].entities:
         return sim.map[pos[0]][pos[1]].entities[entity].z_getCharacteristic(name)
     else:
@@ -240,5 +235,5 @@ def z_actualDay():
 def z_enableEvolution(entity, row, column):
     check = Check_Valid_Positions(row, column)
     if check != None:
-        raise Exception(check + ". Dependence cannot be added")
+        raise Exception(f'{check}. Dependence cannot be added')
     sim.Start_Evolution([row, column], entity)

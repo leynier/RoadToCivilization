@@ -32,41 +32,37 @@ def compute_local_first(firsts, alpha):
 
 
 def compute_firsts(G):
-    firsts = {}
     change = True
-    
-    # init First(Vt)
-    for terminal in G.terminals:
-        firsts[terminal] = ContainerSet(terminal)
-        
+
+    firsts = {terminal: ContainerSet(terminal) for terminal in G.terminals}
     # init First(Vn)
     for nonterminal in G.nonTerminals:
         firsts[nonterminal] = ContainerSet()
-    
+
     while change:
         change = False
-        
+
         # P: X -> alpha
         for production in G.Productions:
             X = production.Left
             alpha = production.Right
-            
+
             # get current First(X)
             first_X = firsts[X]
-                
+
             # init First(alpha)
             try:
                 first_alpha = firsts[alpha]
             except:
                 first_alpha = firsts[alpha] = ContainerSet()
-            
+
             # CurrentFirst(alpha)???
             local_first = compute_local_first(firsts, alpha)
-            
+
             # update First(X) and First(alpha) from CurrentFirst(alpha)
             change |= first_alpha.hard_update(local_first)
             change |= first_X.hard_update(local_first)
-                    
+
     # First(Vt) + First(Vt) + First(RightSides)
     return firsts
 

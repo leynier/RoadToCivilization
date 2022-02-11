@@ -131,10 +131,7 @@ def binomial(values):
     X = 0
     for _ in range(int(n)):
         U = r.random()
-        if U <= p:
-            X += 1
-        else:
-            X += 0
+        X += 1 if U <= p else 0
     return X
 
 

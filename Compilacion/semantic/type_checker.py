@@ -32,17 +32,17 @@ class TypeChecker:
     def visit(self, node, scope=None):
         if(self.error):
             return
-            
-        scope = Scope() if scope == None else scope
+
+        scope = Scope() if scope is None else scope
 
         self.current_type = self.context.get_type("Simulation")
         self.current_method = self.current_type.get_method("_main")
-        
+
         for dec in node.declarations:
             self.visit(dec, scope)
             if(self.error):
                 return
-        
+
         return scope
 
     @visitor.when(nodes.FuncDeclaration)
@@ -54,18 +54,39 @@ class TypeChecker:
         scope.define_variable('self', self.current_type)
         scope = scope.create_child()
 
-        if (node.name == "_main" or node.name == "_start" or node.name == "_random" 
-            or node.name == "_redimention" or node.name == "_end" or node.name == "_write" 
-            or node.name == "_day" or node.name == "_distribution" or node.name == "_plus" 
-            or node.name == "_multiplication" or node.name == "_addLand" or node.name == "_addSociety" 
-            or node.name == "_addSpecies" or node.name == "_deleteLand" or node.name == "_deleteSociety" 
-            or node.name == "_deleteSpecies" or node.name == "_addDependence" or node.name == "_deleteDependence"
-            or node.name == "_deleteInfluence" or node.name == "_addInfluence" or node.name == "_changeCharacteristic"
-            or node.name == "_deleteCharacteristic" or node.name == "_getCharacteristic" or node.name == "_getCharacteristicSummation"
-            or node.name == "_getCharacteristicMean" or node.name == "_getLenght" or node.name == "_numberToString" 
-            or node.name == "_booleanToString" or node.name == "_listToString"
-            or node.name == "_addSociety" or node.name == "_actualDay"
-            or node.name == "_enableEvolution"):
+        if node.name in [
+            "_main",
+            "_start",
+            "_random",
+            "_redimention",
+            "_end",
+            "_write",
+            "_day",
+            "_distribution",
+            "_plus",
+            "_multiplication",
+            "_addLand",
+            "_addSociety",
+            "_addSpecies",
+            "_deleteLand",
+            "_deleteSociety",
+            "_deleteSpecies",
+            "_addDependence",
+            "_deleteDependence",
+            "_deleteInfluence",
+            "_addInfluence",
+            "_changeCharacteristic",
+            "_deleteCharacteristic",
+            "_getCharacteristic",
+            "_getCharacteristicSummation",
+            "_getCharacteristicMean",
+            "_getLenght",
+            "_numberToString",
+            "_booleanToString",
+            "_listToString",
+            "_actualDay",
+            "_enableEvolution",
+        ]:
             self.errors.append(INVALID_NAME % (node.name))
             self.error = True
             return TypeCompatible()
@@ -75,7 +96,7 @@ class TypeChecker:
                 self.errors.append(LOCAL_ALREADY_DEFINED % (name,self.current_method.name))
                 self.error = True
                 return TypeCompatible()
-        
+
             elif typex == 'Simulation':
                 self.errors.append('Simulation cannot be used as a parameter type')
                 self.error = True
@@ -83,7 +104,7 @@ class TypeChecker:
 
             else:
                 scope.define_variable(name, self.context.get_type(typex.name))
-        
+
         last_line = None
         #body_type = self.visit(node.body, scope)
         for line in node.body:
@@ -93,20 +114,20 @@ class TypeChecker:
             if(self.error):
                 return
             last_line = line
-        
+
         if node.type in self.context.types:
             returnType = self.context.get_type(node.type)
-        
+
         if not isinstance(last_line, nodes.AsignationVar):
             self.errors.append(INVALID_RETURN)
             self.error = True
             return TypeCompatible()
-            
+
         if not body_type.conforms_to(returnType):
             self.errors.append(INCOMPATIBLE_TYPES % (body_type.name, returnType))
             self.error = True
             return TypeCompatible()
-            
+
 
         return
 
@@ -149,7 +170,7 @@ class TypeChecker:
                 arg.append(self.visit(i, scope))
                 if(self.error):
                     return
-            if len(arg) != 0:
+            if arg:
                 self.errors.append(INVALID_PARAMS)
                 self.error = True
                 return TypeCompatible()
@@ -171,12 +192,16 @@ class TypeChecker:
                 arg.append(self.visit(i, scope))
                 if(self.error):
                     return
-            if not(((len(arg) == 2  or (len(arg) == 3 and arg[2].name == "List")) 
-                     and arg[0].name == "String" and arg[1].name == "Species")):
+            if (
+                len(arg) != 2
+                and (len(arg) != 3 or arg[2].name != "List")
+                or arg[0].name != "String"
+                or arg[1].name != "Species"
+            ):
                 self.errors.append(INVALID_PARAMS)
                 self.error = True
                 return TypeCompatible()
-            
+
 
         scope.define_variable(node.var, var_type)
 
@@ -395,7 +420,7 @@ class TypeChecker:
             actual_type = self.visit(arg, scope)
             if(self.error):
                 return
-            if type_arg == None:
+            if type_arg is None:
                 type_arg = self.visit(arg, scope)
                 if(self.error):
                     return
@@ -421,14 +446,11 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left == type_right:
-            self.errors.append(INVALID_OPERATION % ('+', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-            
-
-        else:
+        if type_left == type_right:
             return type_right
+        self.errors.append(INVALID_OPERATION % ('+', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
     
 
     @visitor.when(nodes.MinusNode)
@@ -442,13 +464,13 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left.conforms_to(self.context.get_type('Number')) or not type_right.conforms_to(self.context.get_type('Number')):
-            self.errors.append(INVALID_OPERATION % ('-', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-
-        else:
+        if type_left.conforms_to(
+            self.context.get_type('Number')
+        ) and type_right.conforms_to(self.context.get_type('Number')):
             return self.context.get_type('Number')
+        self.errors.append(INVALID_OPERATION % ('-', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
 
     
     @visitor.when(nodes.StarNode)
@@ -462,13 +484,13 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left.conforms_to(self.context.get_type('Number')) or not type_right.conforms_to(self.context.get_type('Number')):
-            self.errors.append(INVALID_OPERATION % ('*', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-
-        else:
+        if type_left.conforms_to(
+            self.context.get_type('Number')
+        ) and type_right.conforms_to(self.context.get_type('Number')):
             return self.context.get_type('Number')
+        self.errors.append(INVALID_OPERATION % ('*', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
 
 
     @visitor.when(nodes.DivNode)
@@ -482,13 +504,13 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left.conforms_to(self.context.get_type('Number')) or not type_right.conforms_to(self.context.get_type('Number')):
-            self.errors.append(INVALID_OPERATION % ('/', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-
-        else:
+        if type_left.conforms_to(
+            self.context.get_type('Number')
+        ) and type_right.conforms_to(self.context.get_type('Number')):
             return self.context.get_type('Number')
+        self.errors.append(INVALID_OPERATION % ('/', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
     
 
     @visitor.when(nodes.LessThan)
@@ -502,13 +524,13 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left.conforms_to(self.context.get_type('Number')) or not type_right.conforms_to(self.context.get_type('Number')):
-            self.errors.append(INVALID_OPERATION % ('<', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-
-        else:
+        if type_left.conforms_to(
+            self.context.get_type('Number')
+        ) and type_right.conforms_to(self.context.get_type('Number')):
             return self.context.get_type('Boolean')
+        self.errors.append(INVALID_OPERATION % ('<', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
     
     @visitor.when(nodes.MoreThan)
     def visit(self, node, scope):
@@ -521,13 +543,13 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left.conforms_to(self.context.get_type('Number')) or not type_right.conforms_to(self.context.get_type('Number')):
-            self.errors.append(INVALID_OPERATION % ('>', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-
-        else:
+        if type_left.conforms_to(
+            self.context.get_type('Number')
+        ) and type_right.conforms_to(self.context.get_type('Number')):
             return self.context.get_type('Boolean')
+        self.errors.append(INVALID_OPERATION % ('>', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
 
     
     @visitor.when(nodes.EqualEqual)
@@ -564,13 +586,13 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left.conforms_to(self.context.get_type('Boolean')) or not type_right.conforms_to(self.context.get_type('Boolean')):
-            self.errors.append(INVALID_OPERATION % ('and', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-
-        else:
+        if type_left.conforms_to(
+            self.context.get_type('Boolean')
+        ) and type_right.conforms_to(self.context.get_type('Boolean')):
             return self.context.get_type('Boolean')
+        self.errors.append(INVALID_OPERATION % ('and', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
 
      
     @visitor.when(nodes.Or)
@@ -584,12 +606,12 @@ class TypeChecker:
         if(self.error):
             return
 
-        if not type_left.conforms_to(self.context.get_type('Boolean')) or not type_right.conforms_to(self.context.get_type('Boolean')):
-            self.errors.append(INVALID_OPERATION % ('or', type_left.name, type_right.name))
-            self.error = True
-            return TypeCompatible()
-
-        else:
+        if type_left.conforms_to(
+            self.context.get_type('Boolean')
+        ) and type_right.conforms_to(self.context.get_type('Boolean')):
             return self.context.get_type('Boolean')
+        self.errors.append(INVALID_OPERATION % ('or', type_left.name, type_right.name))
+        self.error = True
+        return TypeCompatible()
 
     

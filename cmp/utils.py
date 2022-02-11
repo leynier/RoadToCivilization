@@ -33,10 +33,7 @@ class ContainerSet:
         return self.update(other) | self.epsilon_update(other)
 
     def find_match(self, match):
-        for item in self.set:
-            if item == match:
-                return item
-        return None
+        return next((item for item in self.set if item == match), None)
 
     def __len__(self):
         return len(self.set) + int(self.contains_epsilon)
@@ -82,7 +79,7 @@ def inspect(item, grammar_name='G', mapper=None):
             left = inspect(item.Left, grammar_name, mapper)
             right = inspect(item.Right, grammar_name, mapper)
             return f'Production({left}, {right})'
-        elif isinstance(item, tuple) or isinstance(item, list):
+        elif isinstance(item, (tuple, list)):
             ctor = ('(', ')') if isinstance(item, tuple) else ('[',']')
             return f'{ctor[0]} {("%s, " * len(item)) % tuple(inspect(x, grammar_name, mapper) for x in item)}{ctor[1]}'
         else:

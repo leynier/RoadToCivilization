@@ -34,7 +34,7 @@ class Society:
     #Permite habilitar la clase Evolución en esta Sociedad
     def Start_Evolution(self, pos = None):
         self.enable_evolution = True
-        if pos == None:
+        if pos is None:
             self.evolution = Evolution(self.name, self.pos, list(self.characteristic.keys()))
         else:
             self.evolution = Evolution(self.name, pos, list(self.characteristic.keys()))
@@ -63,8 +63,15 @@ class Society:
         if characteristic_name in self.characteristic:
             return self.characteristic[characteristic_name].value
         else:
-            raise Exception("La característica " + characteristic_name + 
-                            " no se encuentra en la sociedad " + self.name)
+            raise Exception(
+                (
+                    (
+                        f'La característica {characteristic_name}'
+                        + " no se encuentra en la sociedad "
+                    )
+                    + self.name
+                )
+            )
 
     def z_getCharacteristic(self,name):
         return self.Get_Characteristic_Value(name)
@@ -80,7 +87,7 @@ class Society:
         else:
             if mutability == -1:
                 mutability = 5
-            if distr_function == None:
+            if distr_function is None:
                 distr_function = operators.distribution_default
             self.characteristic[name] = Characteristic(name, value, lower, upper, mutability, distr_function)
             self.species.Change_In_Specie_Characteristic(name, self.characteristic[name].value)
@@ -105,8 +112,15 @@ class Society:
             logging.info("Society has deleted characteristic: %s", name)
             return
         logging.warning("Society has not deleted characteristic: %s", name)
-        raise Exception("Sociedad " + self.name + " of Land " + str(self.pos) + " doesn't has characteristic " + name +
-                        ". Cannot be removed")
+        raise Exception(
+            (
+                f'Sociedad {self.name} of Land '
+                + str(self.pos)
+                + " doesn't has characteristic "
+                + name
+                + ". Cannot be removed"
+            )
+        )
 
     def z_deleteCharacteristic(self, name):
         self.Delete_Characteristic(name)
@@ -120,7 +134,7 @@ class Society:
         self.enable_evolution = value
 
     def Copy(self, new_species = None):
-        if new_species == None:
+        if new_species is None:
             new_species = self.species
         copy_society = Society(self.name, new_species, self.pos)
         if self.enable_evolution:

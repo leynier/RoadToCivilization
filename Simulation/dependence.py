@@ -17,21 +17,19 @@ class Dependence:
         self.entity_2 = entity_2
         self.characteristic_2 = characteristic_2
         self.c = c
-        if plus_function == None:
+        if plus_function is None:
             plus_function = operators.default_sum
         self.plus_function = plus_function
-        if mult_function == None:
+        if mult_function is None:
             mult_function = operators.default_mul
         self.mult_function = mult_function
         logging.info("dependence was added")
         
     def IsInstance(self, other):
-        if (self.pos_1 == other.pos_1 and self.entity_1 == other.entity_1 and
+        return (self.pos_1 == other.pos_1 and self.entity_1 == other.entity_1 and
            self.characteristic_1 == other.characteristic_1 and
            self.pos_2 == other.pos_2 and self.entity_2 == other.entity_2 and
-           self.characteristic_2 == other.characteristic_2):
-            return True
-        return False
+           self.characteristic_2 == other.characteristic_2)
 
     def Change_C(self, c):
         self.c = c
@@ -43,7 +41,7 @@ class Dependence:
         return (self.pos_2, self.entity_2, self.characteristic_2)
     
     def Is_In(self, ab):
-        return ab == self.Get_A or ab == self.Get_B
+        return ab in [self.Get_A, self.Get_B]
 
     def Copy(self):
         return Dependence(self.pos_1, self.entity_1, self.characteristic_1,

@@ -70,7 +70,10 @@ class Species:
             logging.info("%s has deleted characteristic: %s", self.name, name)
             return
         logging.warning("%s has not deleted characteristic: %s", self.name, name)
-        raise Exception("Characteristic " + name + " of Species " + self.name + " doesn't exist. Cannot be deleted")
+        raise Exception(
+            f'Characteristic {name} of Species {self.name}'
+            + " doesn't exist. Cannot be deleted"
+        )
 
     def z_deleteCharacteristic(self, name):
         self.Delete_Characteristic(self, name)
@@ -92,7 +95,7 @@ class Species:
 
     def Change_In_Specie_Characteristic(self, characteristic, value, old_value = None):
         if characteristic in self.characteristic:
-            if old_value == None:
+            if old_value is None:
                 changed = value
             else:
                 changed = operators.default_sum(value, operators.default_mul(-1,old_value))

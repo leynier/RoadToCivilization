@@ -24,7 +24,7 @@ class Method:
         self.param_names = param_names
         self.param_types = params_types
         self.return_type = return_type
-        self.expected_param_types = dict()
+        self.expected_param_types = {}
         self.expected_return_type = None
 
     def __str__(self):

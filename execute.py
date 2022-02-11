@@ -30,17 +30,14 @@ class Execute:
 
     @visitor.when(nodes.ProgramNode)
     def visit(self, node, scope = None, ident=0):
-        scope = Scope() if scope == None else scope
+        scope = Scope() if scope is None else scope
 
         self.current_type = self.context.get_type("Simulation")
         self.current_method = self.current_type.get_method("_main")
-        
-        main = ""
 
-        for dec in node.declarations:
-            main += "\n" + self.visit(dec, scope, ident)
-        
-        return main
+        return "".join(
+            "\n" + self.visit(dec, scope, ident) for dec in node.declarations
+        )
 
 
     @visitor.when(nodes.FuncDeclaration)
@@ -48,14 +45,14 @@ class Execute:
         self.declared_funct.append(node.name)
 
         self.current_method = self.current_type.get_method(node.name)
-        
+
         params = ""
         for name, typex in zip(self.current_method.param_names, self.current_method.param_types):
-            params += "z" + name + ", "
+            params += f'z{name}, '
             scope.define_variable(name, self.context.get_type(typex.name))
-        
+
         count_declared_var = len(self.declared_var) - 1
-        count_declared_funct = len(self.declared_funct) -1 
+        count_declared_funct = len(self.declared_funct) -1
         count_used_var = len(self.used_var) - 1
         count_used_funct = len(self.used_funct) -1
 
@@ -66,24 +63,29 @@ class Execute:
         for line in node.body:
             lines += "\n" + "\t"*(ident+1) + " " + self.visit(line, scope, ident+1)
             last_line = line
-        
+
         funct = "def " + "z" + node.name + "( "
         duplicate =[]
-        for i in self.declared_var[:count_declared_var + 1]:    
+        for i in self.declared_var[:count_declared_var + 1]:
             if i in duplicate:
                 continue
             duplicate.append(i)
-            params += "z" + i + " = " + "z" + i + ", " if i in self.used_var[count_used_var+1:] else ""
-        for i in self.declared_funct[:count_declared_funct +1]:    
+            params += f'z{i} = z{i}, ' if i in self.used_var[count_used_var+1:] else ""
+        for i in self.declared_funct[:count_declared_funct +1]:
             if i in duplicate:
                 continue
             duplicate.append(i)
-            params += "z" + i + " = " + "z" + i + ", " if i in self.used_funct[count_used_funct+1:] and i != node.name else ""
+            params += (
+                f'z{i} = z{i}, '
+                if i in self.used_funct[count_used_funct + 1 :] and i != node.name
+                else ""
+            )
+
         self.declared_var = self.declared_var[:count_declared_var + 1]
         self.declared_funct = self.declared_var[:count_declared_funct + 1]
         if self.current_method.param_names != [] and count_declared_var == len(self.declared_var) and count_declared_funct == len(self.declared_funct):
                 funct += "):"
-        funct += params[:-2] + "):"
+        funct += f'{params[:-2]}):'
 
         funct += lines + "\n" + "\t"*(ident+1) + " return " + "z" + last_line.var
         #funct += lines + "\n" + "\t"*(ident+1) + " print("+ "z" + last_line.var + ")" + "\n" + "\t"*(ident+1) + " return " + "z" + last_line.var
@@ -97,8 +99,11 @@ class Execute:
 
         var_type = self.context.get_type(node.type)
 
-        decl = "z" + node.var + " = " + self.visit(node.arith_expr, scope.create_child(), ident+1)
-        
+        decl = f'z{node.var} = ' + self.visit(
+            node.arith_expr, scope.create_child(), ident + 1
+        )
+
+
         scope.define_variable(node.var, var_type)
 
         return decl
@@ -110,14 +115,14 @@ class Execute:
 
         var_type = self.context.get_type(node.entity)
 
-        decl = "z" + node.var + " = " + node.entity + "( " 
+        decl = f'z{node.var} = {node.entity}( '
         for arg in node.arg_list:
             param = self.visit(arg, scope, ident+1) + ", "
             decl += param
         if node.arg_list != []:
                 decl = decl[:-2]
         decl += ")"
-        
+
         scope.define_variable(node.var, var_type)
 
         return decl
@@ -127,58 +132,60 @@ class Execute:
     def visit(self, node, scope, ident):
         self.used_var.append(node.var)
 
-        decl = "z" + node.var + " = " + self.visit(node.arith_expr, scope.create_child(), ident+1)
-
-        return decl
+        return f'z{node.var} = ' + self.visit(
+            node.arith_expr, scope.create_child(), ident + 1
+        )
 
 
     @visitor.when(nodes.InstanceFunction)
     def visit(self, node, scope, ident):
         self.used_funct.append(node.name)
-        if(node.obj == None): 
-            inst = "z" + node.name + "( " 
+        if node.obj is None: 
+            inst = f'z{node.name}( '
             for arg in node.arg_list:
                 if isinstance(arg, nodes.Not) or isinstance(arg, nodes.And) or isinstance(arg, nodes.Or) or isinstance(arg, nodes.LessThan) or isinstance(arg, nodes.MoreThan) or isinstance(arg, nodes.EqualEqual) or isinstance(arg, nodes.BooleanNode):
                     
                     count_declared_var = len(self.declared_var) - 1
-                    count_declared_funct = len(self.declared_funct) -1 
+                    count_declared_funct = len(self.declared_funct) -1
                     count_used_var = len(self.used_var) - 1
                     count_used_funct = len(self.used_funct) - 1
-                    
+
                     cond = self.visit(arg, scope, ident+1) + ", "
-                    
+
                     listargs = ""
                     duplicate =[]
                     for i in self.declared_var[:count_declared_var + 1]:    
                         if i in duplicate:
                             continue
                         duplicate.append(i)
-                        listargs += "z" + i + " = " + "z" + i  + ", " if i in self.used_var[count_used_var+1:] else ""
+                        listargs += f'z{i} = z{i}, ' if i in self.used_var[count_used_var+1:] else ""
                     duplicate =[]
                     for i in self.declared_funct[:count_declared_funct +1]:    
                         if i in duplicate:
                             continue
                         duplicate.append(i)
-                        listargs += "z" + i + " = " + "z" + i + ", " if i in self.used_funct[count_used_funct+1:] and i != node.name else ""
+                        listargs += (
+                            f'z{i} = z{i}, '
+                            if i in self.used_funct[count_used_funct + 1 :]
+                            and i != node.name
+                            else ""
+                        )
+
                     self.declared_var = self.declared_var[:count_declared_var + 1]
                     self.declared_funct = self.declared_var[:count_declared_funct + 1]
                     if listargs != "":
                         listargs = listargs[:-2]
-                    
-                    inst += "lambda " + listargs + ": " + cond
+
+                    inst += f'lambda {listargs}: {cond}'
                 else:
                     inst += self.visit(arg, scope, ident+1) + ", "
-            if node.arg_list != []:
-                inst = inst[:-2]
-            inst += ")"
         else:
-            inst = self.visit(node.obj, scope, ident) + "." + "z" + node.name + "( " 
+            inst = self.visit(node.obj, scope, ident) + "." + "z" + node.name + "( "
             for arg in node.arg_list:
                 inst += self.visit(arg, scope, ident+1) + ", "
-            if node.arg_list != []:
-                inst = inst[:-2]
-            inst += ")"
-
+        if node.arg_list != []:
+            inst = inst[:-2]
+        inst += ")"
         return inst
        
 
@@ -209,8 +216,7 @@ class Execute:
     
     @visitor.when(nodes.Not)
     def visit(self, node, scope, ident):
-        nott = "not " + self.visit(node.cond, scope, ident+1) 
-        return nott
+        return "not " + self.visit(node.cond, scope, ident+1)
         
  
     @visitor.when(nodes.NumberNode)
@@ -220,16 +226,13 @@ class Execute:
 
     @visitor.when(nodes.BooleanNode)
     def visit(self, node, scope, ident):
-        if node.exp == "true": 
-            return "True"
-        else:
-            return "False"
+        return "True" if node.exp == "true" else "False"
 
 
     @visitor.when(nodes.FunctionName)
     def visit(self, node, scope, ident):
         self.used_var.append(node.exp)
-        return "z" + node.exp
+        return f'z{node.exp}'
 
     @visitor.when(nodes.StringNode)
     def visit(self, node, scope, ident):
@@ -239,13 +242,17 @@ class Execute:
     @visitor.when(nodes.VariableNode)
     def visit(self, node, scope, ident):
         self.used_var.append(node.exp)
-        return "z" + node.exp
+        return f'z{node.exp}'
 
 
     @visitor.when(nodes.IndexListNode)
     def visit(self, node, scope, ident):
-        ind = self.visit(node.var, scope, ident) + "[" + self.visit(node.index, scope, ident) + "]"
-        return ind
+        return (
+            self.visit(node.var, scope, ident)
+            + "["
+            + self.visit(node.index, scope, ident)
+            + "]"
+        )
 
 
     @visitor.when(nodes.ListNode)

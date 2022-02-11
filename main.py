@@ -4,6 +4,7 @@ from sys import path, set_coroutine_origin_tracking_depth
 
 path.append(str(Path(__file__).parent.parent.absolute()))'''
 
+
 import os
 import streamlit as st
 from Compilacion.grammar import build_grammar
@@ -36,16 +37,14 @@ file_name = st.empty().selectbox(label = 'Seleccione Archivo', options = ['Ningu
 
 
 if file_name and file_name != 'Ninguno Seleccionado':
-    with open(path + '/' + file_name, "r") as file:
+    with open(f'{path}/{file_name}', "r") as file:
         code = file.read()
 
- 
+
 code = st.text_area("Introduzca codigo", value = code)
 
 
-analize = st.button('Analizar')
-
-if analize:
+if analize := st.button('Analizar'):
     if not code:
         st.subheader('Ingrese codigo o seleccione archivo')
     else:
@@ -58,14 +57,15 @@ if analize:
         if lexer.errors:
 
             st.subheader('Error de sintaxis:')
-            
+
             for error in lexer.errors:
                 st.error(error)
 
-            code_with_lines = ''
             st.subheader('Su codigo:')
-            for i,line in enumerate(code.split('\n')):
-                code_with_lines += f'{i+1}:  {line}\n'
+            code_with_lines = ''.join(
+                f'{i+1}:  {line}\n' for i, line in enumerate(code.split('\n'))
+            )
+
             st.text(code_with_lines)
 
         else:
@@ -75,10 +75,12 @@ if analize:
             derivation, operations = parser(tokens)
 
             if parser.error:
-                code_with_lines = ''
                 st.subheader('Su codigo:')
-                for i,line in enumerate(code.split('\n')):
-                    code_with_lines += f'{i+1}:  {line}\n'
+                code_with_lines = ''.join(
+                    f'{i+1}:  {line}\n'
+                    for i, line in enumerate(code.split('\n'))
+                )
+
                 st.text(code_with_lines)
 
                 st.error(parser.error)
@@ -96,8 +98,8 @@ if analize:
 
                 checker = TypeChecker(context)
                 scope = checker.visit(ast)
-                
-                
+
+
                 if not (collector.error or builder.error or checker.error):
                     st.subheader('Programa compiló sin errores:')
                     ex = Execute(context)
@@ -110,7 +112,7 @@ if analize:
                         st.error(error)
 
                 else:
-                   
+
                     st.subheader('Error semántico:')
                     for error in checker.errors:
                         st.error(error)

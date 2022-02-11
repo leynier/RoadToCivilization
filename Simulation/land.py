@@ -28,7 +28,7 @@ class Land:
         logging.info("Land was created")
 
     def Copy(self, pos = None):
-        if pos == None:
+        if pos is None:
             pos = self.pos
         copy_land = Land(pos)
         for characteristics_name in self.characteristic:
@@ -55,19 +55,19 @@ class Land:
         logging.info("Society %s was added", name)
         
     def z_addSociety(self, society):
-        if not(society.name in self.entities):
+        if society.name not in self.entities:
             self.entities[society.name] = society.Copy()
 
     #Eliminar sociedad de nombre de la entrada
     def Delete_Society(self, name):
         if name not in self.entities.keys() or name == '':
-            logging.warning("Society" + name + "was not delete: Society do not exists")
+            logging.warning(f'Society{name}was not delete: Society do not exists')
             return 0
         #Ahora debemos eliminar toda interdependencia que incluya a esta especie
         for characteristic in self.entities[name].characteristic:
             self.Delete_All_Specific_Dependence(name, characteristic)
             self.Delete_All_Specific_Influence(name, characteristic)
-            
+
         self.entities[name].Delete()
         del(self.entities[name])
         logging.info("Society %s was deleted", name)
@@ -75,8 +75,8 @@ class Land:
     #Tomar el valor de la caracteristica de entrada perteneciente a la sociedad de nombre: name
     #Si name = '' entonces se refiere a este terreno 
     def Get_Entities_Characteristic_value(self, name, characteristic):
-        if not name in self.entities:
-            raise Exception("La sociedad " + name + " no existe")
+        if name not in self.entities:
+            raise Exception(f'La sociedad {name} no existe')
         return self.entities[name].Get_Characteristic_Value(characteristic)
         
     #Cambiar el valor de la caracteristica de entrada perteneciente a la sociedad de nombre: name
@@ -126,7 +126,7 @@ class Land:
                     del(dependence[i])
             return
         logging.warning("Land has not deleted characteristic: %s", name)
-        raise Exception("Land already has not the characteristic: " + name)
+        raise Exception(f'Land already has not the characteristic: {name}')
 
     def z_deleteCharacteristic(self, name):
         self.Delete_Characteristic(self, name)
@@ -260,10 +260,10 @@ class Land:
             a = distribution(self.entities[actual_dependence.entity_1].Get_Characteristic_Value(actual_dependence.characteristic_1))  #Extraemos a
             b = self.entities[actual_dependence.entity_2].Get_Characteristic_Value(actual_dependence.characteristic_2)           #Extraemos b
             c = actual_dependence.c  #Extraemos c
-            
+
             plus  = actual_dependence.plus_function
             mult  = actual_dependence.mult_function
-            
+
 
             #se hace una separación por casos:
             #Si a tiene dos coordenadas, entonces el valor de a es directamente un random de ese intervalo
@@ -276,21 +276,21 @@ class Land:
             #Si b es una coordenada (b1, b2), y c una coordenada (c1, c2), entonces se debe hacer:
             # (b1, b2) = (b1, b2) + (c1*a, c2*a)
             #Si b es una coordenada y c un valor entonces se multiplica ambas a por c
-            
+
             result = operators.dependence(plus, mult)(a, b, c)
             actual_status[(actual_dependence.entity_2, actual_dependence.characteristic_2)] = result
 
             change_value = 0
-            
+
             if isinstance(result, List):
                 change_value = (result[0] - b[0] + result[1] - b[1])/2
             else:
                 change_value = result - b
- 
+
             self.Learning_for_Evolution(actual_dependence, a, change_value)
 
             logging.info("Land has update characteristic")
-        
+
         #Se guarda el diccionario final resultado de aplicar las dependencias y luego las influenncias que traen las mismas
         final_status= actual_status.copy()
         for actual_influence in self.characteristic_influences:
@@ -300,22 +300,18 @@ class Land:
             b = self.entities[actual_influence.entity_2].Get_Characteristic_Value(actual_influence.characteristic_2)           #Extraemos b
             c = actual_influence.c  #Extraemos c
             act_a = actual_status.get((actual_influence.entity_1, actual_influence.characteristic_1))
-            if act_a == None:
-                act_a = a
-            else:
-                act_a = distribution(act_a)
-            
+            act_a = a if act_a is None else distribution(act_a)
             plus  = actual_influence.plus_function
             mult  = actual_influence.mult_function
 
             #Opera parecido a las dependencias pero no nos interesa modificar atendiendo al valor sino a los cambios surgidos mientras avanza el día
-            
+
             final_status[(actual_influence.entity_2, actual_influence.characteristic_2)] = operators.influence(plus, mult)(a, act_a, b, c)
             logging.info("Land has update characteristic with influence: %s -> %s * %s", actual_influence.characteristic_1, actual_influence.characteristic_2, actual_influence.c)
-        
+
         #Los cambios finales resultantes de las dependencias e influencias actualizan las caracteristicas modificadas
         for update in final_status:
-            self.entities[update[0]].Update_Characteristic_Value(update[1], final_status[update])        
+            self.entities[update[0]].Update_Characteristic_Value(update[1], final_status[update])
         logging.info("Land has move one day")
 
     #Permite habilitar la clase Evolución para alguna de las sociedades Sociedad

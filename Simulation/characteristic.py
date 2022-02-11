@@ -11,7 +11,7 @@ class Characteristic:
         self.limit_inf = limit_inf
         self.limit_sup = limit_sup
         self.mutability = mutability
-        if distr_function == None:
+        if distr_function is None:
             distr_function = operators.distribution_default
         self.distr_function = distr_function
         logging.info("Society has added/changed characteristic: %s with value:%s", name, value)
@@ -28,7 +28,7 @@ class Characteristic:
             if value[0] > upper:
                 value[0] = upper
                 ret = False
-                
+
             if value[1] > upper:
                 value[1] = upper
                 ret = False
@@ -42,15 +42,15 @@ class Characteristic:
             if value > upper:
                 value = upper
                 ret = False
-        
+
         if mutability == -1:
             mutability = self.mutability
-        
-        if distr_function == None:
+
+        if distr_function is None:
             distr_function = self.distr_function
-        
+
         self.name = name
-        self.value = value 
+        self.value = value
         self.limit_inf = lower
         self.limit_sup = upper
         self.mutability = mutability

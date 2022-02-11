@@ -107,5 +107,4 @@ class Regex:
         T=evaluate_parse(f,h)
         H=T.evaluate()
         X=nfa_to_dfa(H)
-        k=automata_minimization(X)
-        return k
+        return automata_minimization(X)

@@ -94,11 +94,12 @@ class Lexer:
 '''
 Esta clase guardara las propiedades sintacticas de mi lenguaje
 '''
-nonzero_digits = '|'.join(str(n) for n in range(0,10))
+
+nonzero_digits = '|'.join(str(n) for n in range(10))
 lower_letters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))
 upper_letters = '|'.join(chr(n) for n in range (ord('A'),ord('Z')+1))
-letters = lower_letters +'|'+ upper_letters + '|' + '_'
-letters_with_space = lower_letters +'|'+ upper_letters + '|' + '_' + '|' + ' '
+letters = f'{lower_letters}|{upper_letters}|_'
+letters_with_space = f'{lower_letters}|{upper_letters}|_| '
 
 regexs = [
 ('while'     ,'while'                      ), 
@@ -133,6 +134,6 @@ regexs = [
 ('funct_name',f'_({letters})({letters}|0|{nonzero_digits})*'             ),
 ('string'    ,'\"'                         ),
 ('number'    , f'({nonzero_digits})(0|{nonzero_digits})*'                     ),]
-        
+
 ignored_tokens = ['space', 'line']
 lexer = Lexer(regexs,ignored_tokens,'$')

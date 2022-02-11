@@ -34,7 +34,7 @@ def evolution_test():
 
     print("Día " + str(day) + ": \n")
     sim.Move_One_Day_All()
-    day = day + 1
+    day += 1
     print(sim.map[0][0].entities["Cubano"].evolution.society_name)
     print(sim.map[0][0].entities["Cubano"].evolution.pos)
     print(sim.map[0][0].entities["Cubano"].evolution.characteristics)
@@ -52,7 +52,7 @@ def evolution_test():
 
     print("Día " + str(day) + ": \n")
     sim.Move_One_Day_All()
-    day = day + 1
+    day += 1
     print(sim.map[0][0].entities["Cubano"].evolution.society_name)
     print(sim.map[0][0].entities["Cubano"].evolution.pos)
     print(sim.map[0][0].entities["Cubano"].evolution.characteristics)
@@ -70,7 +70,7 @@ def evolution_test():
 
     print("Día " + str(day) + ": \n")
     sim.Move_One_Day_All()
-    day = day + 1
+    day += 1
     print(sim.map[0][0].entities["Cubano"].evolution.society_name)
     print(sim.map[0][0].entities["Cubano"].evolution.pos)
     print(sim.map[0][0].entities["Cubano"].evolution.characteristics)
@@ -88,7 +88,7 @@ def evolution_test():
 
     print("Día " + str(day) + ": \n")
     sim.Move_One_Day_All()
-    day = day + 1
+    day += 1
     print(sim.map[0][0].entities["Cubano"].evolution.society_name)
     print(sim.map[0][0].entities["Cubano"].evolution.pos)
     print(sim.map[0][0].entities["Cubano"].evolution.characteristics)
@@ -105,10 +105,10 @@ def evolution_test():
     print(sim.map[1][1].entities["Americano"].characteristic["Poblacion"].value)
 
 
-    for i in range(10):
+    for _ in range(10):
         print("Día " + str(day) + ": \n")
         sim.Move_One_Day_All()
-        day = day + 1
+        day += 1
 
     print(sim.map[0][0].entities["Cubano"].evolution.society_name)
     print(sim.map[0][0].entities["Cubano"].evolution.pos)
@@ -168,56 +168,56 @@ def society_test():
 
 def simulation_test() -> None:
     sim = Simulation(2,3)
-    
+
     #Testeando añadir
     res1 = False
     res2 = False
     sim.Add_Species('Humano')
     sim.Add_Species('Marciano')
     sim.actual_species["Humano"].Set_Default_Characteristics()
-    sim.actual_species["Marciano"].Set_Default_Characteristics()  
+    sim.actual_species["Marciano"].Set_Default_Characteristics()
     for actual in sim.actual_species.values():
         if actual.name == 'Humano':
-            res1 = True            
-        if actual.name == 'Marciano':
-            res2 = True    
+            res1 = True
+        elif actual.name == 'Marciano':
+            res2 = True
     print( res1)
     print( res2    )
     res1 = False
     res2 = False
     res3 = False
-    sim.Add_Species('Humano')    
+    sim.Add_Species('Humano')
     sim.Add_Species('Yedi')
     sim.actual_species["Yedi"].Set_Default_Characteristics()
     for actual in sim.actual_species.values():
         if actual.name == 'Humano':
-            res1 = True            
-        if actual.name == 'Marciano':
-            res2 = True            
-        if actual.name == 'Yedi':
-            res3 = True    
+            res1 = True
+        elif actual.name == 'Marciano':
+            res2 = True
+        elif actual.name == 'Yedi':
+            res3 = True
     print( res1 )
     print( res2)
     print( res3)
     print( len(sim.actual_species)==3)
-    
+
     #Testeando eliminar
-    print( sim.Delete_Species(20) == None)
+    print(sim.Delete_Species(20) is None)
     print( len(sim.actual_species)==3)
-    print( sim.Delete_Species("juan") == None)
+    print(sim.Delete_Species("juan") is None)
     print( len(sim.actual_species)==3)
-    
+
     sim.Delete_Species('Marciano')
     res1 = False
     res2 = False
-    res3 = True  
+    res3 = True
     for actual in sim.actual_species.values():
         if actual.name == 'Humano':
-            res1 = True            
-        if actual.name == 'Yedi':
-            res2 = True    
-        if actual.name == 'Marciano':
-            res3 = False    
+            res1 = True
+        elif actual.name == 'Marciano':
+            res3 = False
+        elif actual.name == 'Yedi':
+            res2 = True
     print( res1 )
     print( res2)
     print( res3)
@@ -234,29 +234,33 @@ def simulation_test() -> None:
         for j in range(3):
             sim.Set_Default_Land_Characteristic(i,j)
             print( len(sim.map[i][j].characteristic) == 6)
-    
+
     # Actualmente tenemos tenemos dos especies con las ccaracteristicas por defecto, y un terreno de 2 filas y 3 columnas 
     # A continuación agregaremos 3 interpedendencias especie especie, terreno terreno, terreno especie 
     # Luego comprobaremos que efectivamente la simulación se mueve un día y se cambia de valor las características
-    
+
     sim.Add_Inter_Dependence([1,1], "Humano","Poblacion", [1,1],"Yedi", "Economía",5)
     sim.Move_One_Day_Inter_Dependences()
     print( (sim.map[1][1]).Get_Entities_Characteristic_value('Yedi', "Economía") > 1)
-    
+
     sim.Add_Inter_Dependence([1,2], "","Altitud", [1,1],"", "Temperatura",-1)
     sim.Move_One_Day_Inter_Dependences()
-    print( not ((sim.map[1][1]).Get_Entities_Characteristic_value('',"Temperatura") == [0,1]))
-    
-    
+    print(
+        (sim.map[1][1]).Get_Entities_Characteristic_value('', "Temperatura")
+        != [0, 1]
+    )
+
+        
+
     sim.Add_Inter_Dependence([0,0], "","Capacidad de Recursos", [0,0],"Humano", "Esperanza de Vida",2)
     sim.Move_One_Day_Inter_Dependences()
     print( (sim.map[0][0]).Get_Entities_Characteristic_value('Humano', "Esperanza de Vida") > 1)
-    
+
     #Por último agregaremos dependencias entre especies y correremos todo un día verificando los avances
     sim.Add_Land_Dependences(0,1,"Humano","Poblacion","Humano","Poblacion",2)
     sim.Change_Land_Characteristic(0,1,"Fertilidad",[1,2])
     sim.Add_Land_Dependences(0,1,"","Fertilidad","","Capacidad de Recursos",10)
-    
+
     sim.Move_One_Day_All()
     print( (sim.map[1][1]).Get_Entities_Characteristic_value("Yedi","Economía") == 201)
     print( (sim.map[1][1]).Get_Entities_Characteristic_value("","Temperatura") == [-3,-2])
@@ -270,26 +274,26 @@ def land_test() -> None:
     terreno = Land([0,0])
     print( terreno.characteristic == {})
     print( terreno.characteristic_dependences == [])
-    
+
     terreno.Set_Default_Characteristics()
     print( len(terreno.characteristic) == 6)
-    
+
     #Testeando caracteristicas
     print( terreno.Get_Characteristic_Value('Recursos Actuales') == 1)
     terreno.Change_Characteristic('Recursos Actuales', 500, 0, 21000)
     print( terreno.Get_Characteristic_Value('Recursos Actuales') == 500)
-    
+
     print( len(terreno.characteristic) == 6)
     terreno.Delete_Characteristic('Recursos Actuales')
     print( len(terreno.characteristic) == 5)
     print( 'Recursos Actuales' not in terreno.characteristic)
     terreno.Delete_Characteristic('Recursos Actuales')
     print( len(terreno.characteristic) == 5)
-    
+
     terreno.Change_Characteristic('Recursos Actuales', 1000)
     print( terreno.Get_Characteristic_Value('Recursos Actuales') == 1000)
     print( len(terreno.characteristic) == 6)
-    
+
     #Testeando dependencias
     terreno.Add_Dependence('','Altitud', '','Temperatura', 1)
     print( len(terreno.characteristic_dependences) == 1)
@@ -302,25 +306,25 @@ def land_test() -> None:
     print( len(terreno.characteristic_dependences) == 3)
     terreno.Delete_Dependence('','Altitud', '','Temperatura')
     print( len(terreno.characteristic_dependences) == 2)
-    
+
     terreno.Change_Dependences_Value('','Recursos Actuales','', 'Fertilidad', 0.001)
     print( terreno.characteristic_dependences[1].c == 0.001)
-    
+
     terreno.Delete_Dependence('', 'Altitud', '', 'Temperatura')
     print( len(terreno.characteristic_dependences) == 2)
-    
+
     terreno.Add_Dependence('', 'Recursos Actuales', '', 'Recursos Actuales', 0.005)
     print( len(terreno.characteristic_dependences) == 3)
     print( terreno.characteristic_dependences[2].c == 0.005)
-    
+
     terreno.Add_Influences('','Altitud', '', 'Temperatura', 5)
     terreno.Add_Influences('','Fertilidad','', 'Nivel de Acogimiento', 5)
     print( len(terreno.characteristic_influences) == 2)
     print( terreno.Get_Characteristic_Value('Recursos Actuales') == 1000)
-    print( terreno.Move_One_Day() == None)
+    print(terreno.Move_One_Day() is None)
     print( terreno.Get_Characteristic_Value('Recursos Actuales') > 500)
-    for i in range(1000):
-        print( terreno.Move_One_Day() == None)
+    for _ in range(1000):
+        print(terreno.Move_One_Day() is None)
     #Altura no cambia por lo tanto temperatura se mantiene igual aunque este influenciado por la altura
     print( terreno.Get_Characteristic_Value('Temperatura') == [0,1])
     print( terreno.Get_Characteristic_Value('Recursos Actuales') > 20000)
@@ -328,22 +332,22 @@ def land_test() -> None:
     #Aqui sin embargo nivel de acogimiento esta influenciado por fertilidad, 
     #como fertilidad cambia significativamente el nivel de acogimiento tambien
     print( terreno.Get_Characteristic_Value('Nivel de Acogimiento') > 40000)
-    
+
 
 
     terreno.Add_Society("Cuba", Species("Humanos"))
     terreno.Delete_Society("Cuba")
     terreno.Add_Society("Cuba", Species("Homo-sapiens"))
-    
+
     terreno.Set_Default_Entities_Characteristic("Cuba")
     terreno.Add_Dependence("Cuba", "Poblacion", "Cuba", "Poblacion", 100)
-    
+
     terreno.Add_Dependence("Cuba", "Poblacion", "", "Altitud", 2)
     print( terreno.Get_Characteristic_Value('Altitud') == 1)
-    print( terreno.Move_One_Day() == None)
+    print(terreno.Move_One_Day() is None)
     print( terreno.Get_Entities_Characteristic_value("Cuba","Poblacion") == 1010)
     print( terreno.Get_Characteristic_Value('Altitud') == 21)
-    print( terreno.Move_One_Day() == None)
+    print(terreno.Move_One_Day() is None)
     print( terreno.Get_Entities_Characteristic_value("Cuba","Poblacion") == 102010)
     print( terreno.Get_Characteristic_Value('Altitud') == 2041)
 

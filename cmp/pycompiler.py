@@ -56,7 +56,7 @@ class NonTerminal(Symbol):
             assert len(other) == len(other[0]) + 2, "Debe definirse una, y solo una, regla por cada símbolo de la producción"
             # assert len(other) == 2, "Tiene que ser una Tupla de 2 elementos (sentence, attribute)"
 
-            if isinstance(other[0], Symbol) or isinstance(other[0], Sentence):
+            if isinstance(other[0], (Symbol, Sentence)):
                 p = AttributeProduction(self, other[0], other[1:])
             else:
                 raise Exception("")
@@ -308,9 +308,7 @@ class Grammar():
 
     def NonTerminals(self, names):
 
-        ans = tuple((self.NonTerminal(x) for x in names.strip().split()))
-
-        return ans
+        return tuple((self.NonTerminal(x) for x in names.strip().split()))
 
 
     def Add_Production(self, production):
@@ -337,9 +335,7 @@ class Grammar():
 
     def Terminals(self, names):
 
-        ans = tuple((self.Terminal(x) for x in names.strip().split()))
-
-        return ans
+        return tuple((self.Terminal(x) for x in names.strip().split()))
 
 
     def __str__(self):
@@ -378,17 +374,13 @@ class Grammar():
         for p in self.Productions:
             head = p.Left.Name
 
-            body = []
-
-            for s in p.Right:
-                body.append(s.Name)
+            body = [s.Name for s in p.Right]
 
             productions.append({'Head':head, 'Body':body})
 
         d={'NonTerminals':[symb.Name for symb in self.nonTerminals], 'Terminals': [symb.Name for symb in self.terminals],\
          'Productions':productions}
 
-         # [{'Head':p.Left.Name, "Body": [s.Name for s in p.Right]} for p in self.Productions]
         return json.dumps(d)
 
     @staticmethod
@@ -425,31 +417,24 @@ class Grammar():
 
     @property
     def IsAugmentedGrammar(self):
-        augmented = 0
-        for left, right in self.Productions:
-            if self.startSymbol == left:
-                augmented += 1
-        if augmented <= 1:
-            return True
-        else:
-            return False
+        augmented = sum(self.startSymbol == left for left, right in self.Productions)
+        return augmented <= 1
 
     def AugmentedGrammar(self, force=False):
-        if not self.IsAugmentedGrammar or force:
+        if self.IsAugmentedGrammar and not force:
 
-            G = self.copy()
-            # S, self.startSymbol, SS = self.startSymbol, None, self.NonTerminal('S\'', True)
-            S = G.startSymbol
-            G.startSymbol = None
-            SS = G.NonTerminal('S\'', True)
-            if G.pType is AttributeProduction:
-                SS %= S + G.Epsilon, lambda x : x
-            else:
-                SS %= S + G.Epsilon
-
-            return G
-        else:
             return self.copy()
+        G = self.copy()
+        # S, self.startSymbol, SS = self.startSymbol, None, self.NonTerminal('S\'', True)
+        S = G.startSymbol
+        G.startSymbol = None
+        SS = G.NonTerminal('S\'', True)
+        if G.pType is AttributeProduction:
+            SS %= S + G.Epsilon, lambda x : x
+        else:
+            SS %= S + G.Epsilon
+
+        return G
     #endchange
 
 class Item:
@@ -457,7 +442,7 @@ class Item:
     def __init__(self, production, pos, lookaheads=[]):
         self.production = production
         self.pos = pos
-        self.lookaheads = frozenset(look for look in lookaheads)
+        self.lookaheads = frozenset(lookaheads)
 
     def __str__(self):
         s = str(self.production.Left) + " -> "
@@ -470,7 +455,7 @@ class Item:
                 s += "."
         else:
             s += "."
-        s += ", " + str(self.lookaheads)[10:-1]
+        s += f', {str(self.lookaheads)[10:-1]}'
         return s
 
     def __repr__(self):

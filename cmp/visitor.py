@@ -26,8 +26,7 @@ __all__ = ['on', 'when']
 
 def on(param_name):
   def f(fn):
-    dispatcher = Dispatcher(param_name, fn)
-    return dispatcher
+    return Dispatcher(param_name, fn)
   return f
 
 
@@ -59,14 +58,13 @@ class Dispatcher(object):
     d = self.targets.get(typ)
     if d is not None:
       return d(*args, **kw)
-    else:
-      issub = issubclass
-      t = self.targets
-      ks = t.keys()
-      ans = [t[k](*args, **kw) for k in ks if issub(typ, k)]
-      if len(ans) == 1:
-        return ans.pop()
-      return ans
+    issub = issubclass
+    t = self.targets
+    ks = t.keys()
+    ans = [t[k](*args, **kw) for k in ks if issub(typ, k)]
+    if len(ans) == 1:
+      return ans.pop()
+    return ans
 
   def add_target(self, typ, target):
     self.targets[typ] = target

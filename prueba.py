@@ -15,7 +15,7 @@ path =  os.getcwd() + '/plantillas'
 
 file_name = "plantilla7.txt"
 
-with open(path + '/' + file_name, "r") as file:
+with open(f'{path}/{file_name}', "r") as file:
     code = file.read()
 
 if not code:
@@ -28,10 +28,11 @@ else:
     tokens = lexer(code)
 
     if lexer.errors:
-        code_with_lines = ''
         print('Su codigo:')
-        for i,line in enumerate(code.split('\n')):
-            code_with_lines += f'{i+1}:  {line}\n'
+        code_with_lines = ''.join(
+            f'{i+1}:  {line}\n' for i, line in enumerate(code.split('\n'))
+        )
+
         print(code_with_lines)
 
         for error in lexer.errors:
@@ -44,10 +45,11 @@ else:
 
 
         if parser.error:
-            code_with_lines = ''
             print('Su codigo:')
-            for i,line in enumerate(code.split('\n')):
-                code_with_lines += f'{i+1}:  {line}\n'
+            code_with_lines = ''.join(
+                f'{i+1}:  {line}\n' for i, line in enumerate(code.split('\n'))
+            )
+
             print(code_with_lines)
 
             print(parser.error)
@@ -65,24 +67,24 @@ else:
 
             checker = TypeChecker(context)
             scope = checker.visit(ast)
-            
-            
+
+
             if not (collector.error or builder.error or checker.error):
                 print('Programa culmino sin errores:')
                 ex = Execute(context)
                 program = ex.visit(ast)
                 print(program)
                 #exec(program)
-                
+
                 try:
                     exec(program)
                 except Exception as error:
                     print(repr(error))
-                
-                
+
+
 
             else:
-                
+
                 print('Semantic Errors:')
                 print(code)
                 for error in checker.errors:

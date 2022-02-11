@@ -49,10 +49,20 @@ class Evolution:
     def Add_Characteristic(self, characteristic):
         pos = self.Search_Characteristic_Pos(characteristic)
         if pos != -1:
-            raise Exception("El Evolution de " + self.society_name + 
-                            " ya tiene la característica: " + characteristic +
-                            ". Por tanto, no puede añadirla.")
-        
+            raise Exception(
+                (
+                    (
+                        (
+                            f'El Evolution de {self.society_name}'
+                            + " ya tiene la característica: "
+                        )
+                        + characteristic
+                    )
+                    + ". Por tanto, no puede añadirla."
+                )
+            )
+
+
         self.characteristics.append([characteristic, 0])
         self.inter_dependences.append([])
         self.values.append(0)
@@ -64,9 +74,19 @@ class Evolution:
     def Remove_Characteristic(self, characteristic):
         pos = self.Search_Characteristic_Pos(characteristic)
         if pos == -1:
-            raise Exception("El Evolution de " + self.society_name + 
-                            " no tiene la característica: " + characteristic +
-                            ". Por tanto no puede removerla.")
+            raise Exception(
+                (
+                    (
+                        (
+                            f'El Evolution de {self.society_name}'
+                            + " no tiene la característica: "
+                        )
+                        + characteristic
+                    )
+                    + ". Por tanto no puede removerla."
+                )
+            )
+
         del(self.characteristics[pos])
         del(self.inter_dependences[pos])
         del(self.values[pos])
@@ -87,11 +107,19 @@ class Evolution:
         #Primero obtenemos el pos de la característica que fue afectada
         pos = self.Search_Characteristic_Pos(in_inter_dependence.characteristic_2)
         if pos == -1:
-            raise Exception("La característica a mejorar: " + in_inter_dependence.characteristic_2 +
-                            ", no se encuentra en el Evolution de " + self.society_name)
+            raise Exception(
+                (
+                    (
+                        f'La característica a mejorar: {in_inter_dependence.characteristic_2}'
+                        + ", no se encuentra en el Evolution de "
+                    )
+                    + self.society_name
+                )
+            )
+
 
         self.values[pos] = self.values[pos] + change_value
-        
+
         characteristic_list = self.inter_dependences[pos]
         for dependence in characteristic_list:
             if (dependence[0] == in_inter_dependence.entity_1 and
@@ -124,55 +152,64 @@ class Evolution:
         self.Check_Characteristics_Values()
 
         initial_request = self.Actualizate_Values() #Primero actualizamos los valores
-                                                    #y verificamos si esto genera un request
         #Ahora debemos limpiar las listas de datos que usamos para el Actualizate_Values
         self.old_values = self.values
-        self.values = []
-        for i in range(len(self.old_values)):
-            self.values.append(0)
-        
+        self.values = [0 for _ in range(len(self.old_values))]
         if initial_request != None:
             self.request = initial_request[0][1]
             pos = [initial_request[1][0], initial_request[1][1]]
             self.request_pos = pos
             return initial_request[0]
         #En caso de que no, entonces pasamos a seleccionar una característica para poder evolucionar
-        
-        positions = [] #Seleccionamos el orden de las posiciones según
-                       #su prioridad, en este caso, el valor absoluto
-        for i in range(len(self.characteristics)):
-            positions.append((math.fabs(self.old_values[i]), i))
+
+        positions = [
+            (math.fabs(self.old_values[i]), i)
+            for i in range(len(self.characteristics))
+        ]
 
         positions.sort(reverse=True) #Ordenamos por valor absoluto,
-                                                 #de mayor a menor
         for i in range(len(positions)): #Vamos por toda la lista
             pos = positions[i][1]     #Seleccionamos la posición actual
-            if self.characteristics[pos][1] == 0: #Si no sabemos si perjudica o beneficia
+            if self.characteristics[pos][1] == 0:
                 continue                          #entonces no podemos hacer nada
-            else:
-                dependences_list = self.inter_dependences[i] #Extraemos las dependencias que conocemos
-                for j in range(len(dependences_list)):
-                    #Lo siguiente es escoger alguna métrica por la que calcular cuántas veces
-                    #se escoge una característica antes de detenernos y escoger otra, en este
-                    #caso escogimos como métrica la cantidad de características
-                    if (self.attemp_success[i][j] != 0 or self.attemps[i][j] > len(self.characteristics) or
+            dependences_list = self.inter_dependences[i] #Extraemos las dependencias que conocemos
+            for j in range(len(dependences_list)):
+                if (self.attemp_success[i][j] != 0 or self.attemps[i][j] > len(self.characteristics) or
                         (self.inter_dependences[i][j][0] == self.society_name and 
                          self.inter_dependences[i][j][2] == self.pos)):
-                        continue
-                    else:
-                        entity_2 = self.inter_dependences[i][j][0]
-                        characteristic_2 = self.inter_dependences[i][j][1]
-                        pos_2 = self.inter_dependences[i][j][3]
-                        entity_1 = self.society_name
-                        characteristic_1 = str(self.characteristics[i][0] + "=>" + str(pos_2[0]) + "_" +
-                                               str(pos_2[1]) + "_" + entity_2 + "_" + characteristic_2)
-                        pos_1 = self.pos
-                        c = self.characteristics[i][1] * sign(self.old_values[i])
+                    continue
+                entity_2 = self.inter_dependences[i][j][0]
+                characteristic_2 = self.inter_dependences[i][j][1]
+                pos_2 = self.inter_dependences[i][j][3]
+                entity_1 = self.society_name
+                characteristic_1 = str(
+                    (
+                        (
+                            (
+                                (
+                                    (
+                                        f'{self.characteristics[i][0]}=>'
+                                        + str(pos_2[0])
+                                        + "_"
+                                        + str(pos_2[1])
+                                    )
+                                    + "_"
+                                )
+                                + entity_2
+                            )
+                            + "_"
+                        )
+                        + characteristic_2
+                    )
+                )
 
-                        self.attemps[i][j] = self.attemps[i][j] + 1
-                        self.request = Dependence(pos_1, entity_1, characteristic_1, pos_2, entity_2, characteristic_2, c)
-                        self.request_pos = [i,j]
-                        return [1, self.request]
+                pos_1 = self.pos
+                c = self.characteristics[i][1] * sign(self.old_values[i])
+
+                self.attemps[i][j] = self.attemps[i][j] + 1
+                self.request = Dependence(pos_1, entity_1, characteristic_1, pos_2, entity_2, characteristic_2, c)
+                self.request_pos = [i,j]
+                return [1, self.request]
         self.Reset_values()
         return None
 
@@ -209,8 +246,27 @@ class Evolution:
                     characteristic_2 = self.inter_dependences[i][j][1]
                     pos_2 = self.inter_dependences[i][j][3]
                     entity_1 = self.society_name
-                    characteristic_1 = str(self.characteristics[i][0] + "=>" + str(pos_2[0]) + "_" + 
-                                           str(pos_2[1]) + "_" + entity_2 + "_" + characteristic_2)
+                    characteristic_1 = str(
+                        (
+                            (
+                                (
+                                    (
+                                        (
+                                            f'{self.characteristics[i][0]}=>'
+                                            + str(pos_2[0])
+                                            + "_"
+                                            + str(pos_2[1])
+                                        )
+                                        + "_"
+                                    )
+                                    + entity_2
+                                )
+                                + "_"
+                            )
+                            + characteristic_2
+                        )
+                    )
+
                     pos_1 = self.pos
 
                     #Si es positivo, entonces beneficia a Población
@@ -228,20 +284,18 @@ class Evolution:
                                 self.attemp_success[i][j] = 3
                                 self.inter_dependences[i][j][2] = 0
                                 return [[-1, Dependence(pos_1, entity_1, characteristic_1, pos_2, entity_2, characteristic_2, 1)], [i,j]]
-                    else:  #Si es negativo. entonces perjudica a la población
-                        #Si diminuyó el valor, entonces debemos quedarnos con esa solución
-                        if self.values[i] - self.old_values[i] < 0:
-                            self.attemp_success[i][j] = 3 #Aseguramos que tomamos la decisión correcta
-                            return None
-                        else: #Si no, debemos cambiar la decisión
-                            if self.attemp_success[i][j] == 1: #Si es la primera vez, invertimos la decisión
-                                self.attemp_success[i][j] = 2
-                                self.inter_dependences[i][j][2] = 1
-                                return [[0, Dependence(pos_1, entity_1, characteristic_1, pos_2, entity_2, characteristic_2, 1)], [i,j]]
-                            else: #Si es la segunda vez, eliminamos entonces la decisión tomada
-                                self.attemp_success[i][j] = 3
-                                self.inter_dependences[i][j][2] = 0
-                                return [[-1, Dependence(pos_1, entity_1, characteristic_1, pos_2, entity_2, characteristic_2, -1)], [i,j]]
+                    elif self.values[i] - self.old_values[i] < 0:
+                        self.attemp_success[i][j] = 3 #Aseguramos que tomamos la decisión correcta
+                        return None
+                    else: #Si no, debemos cambiar la decisión
+                        if self.attemp_success[i][j] == 1: #Si es la primera vez, invertimos la decisión
+                            self.attemp_success[i][j] = 2
+                            self.inter_dependences[i][j][2] = 1
+                            return [[0, Dependence(pos_1, entity_1, characteristic_1, pos_2, entity_2, characteristic_2, 1)], [i,j]]
+                        else: #Si es la segunda vez, eliminamos entonces la decisión tomada
+                            self.attemp_success[i][j] = 3
+                            self.inter_dependences[i][j][2] = 0
+                            return [[-1, Dependence(pos_1, entity_1, characteristic_1, pos_2, entity_2, characteristic_2, -1)], [i,j]]
         return None
 
     #Método para establecer qué características afectan positiva o negativamente a la población
@@ -254,11 +308,19 @@ class Evolution:
         #Primero recogemos todas las dependencias de esta sociedad a sí misma y las guardamos con su valor en una lista
         dependences_list = []
         for i in range(len(self.inter_dependences)):
-            for j in range(len(self.inter_dependences[i])):
-                if(self.inter_dependences[i][j][0] == self.society_name and
-                   self.inter_dependences[i][j][2] == self.pos):
-                    dependences_list.append((self.inter_dependences[i][j][1],
-                                             self.characteristics[i][0], self.inter_dependences[i][j][2]))
+            dependences_list.extend(
+                (
+                    self.inter_dependences[i][j][1],
+                    self.characteristics[i][0],
+                    self.inter_dependences[i][j][2],
+                )
+                for j in range(len(self.inter_dependences[i]))
+                if (
+                    self.inter_dependences[i][j][0] == self.society_name
+                    and self.inter_dependences[i][j][2] == self.pos
+                )
+            )
+
         #Ahora comenzamos a recorrer este "grafo", para saber quién afecta negativa o positivamente a
         #cada característica
 
@@ -271,7 +333,7 @@ class Evolution:
                 positions_to_remove.append(i)
                 pos = self.Search_Characteristic_Pos(dependences_list[i][0])
                 self.characteristics[pos][1] = dependences_list[i][2]
-        
+
         #Removemos las dependencias que usamos de la lista
         dependences_list = Remove_from_List(dependences_list, positions_to_remove)
         positions_to_remove = []
@@ -289,25 +351,27 @@ class Evolution:
                     positions_to_remove.append(i)
                     self.characteristics[pos_1][1] = self.characteristics[pos_2][1] * dependences_list[i][2]
 
-            if len(positions_to_remove) == 0:
+            if not positions_to_remove:
                 actual_change = False
             else:
                 dependences_list = Remove_from_List(dependences_list, positions_to_remove)
                 positions_to_remove = []
 
     def Search_Characteristic_Pos(self, characteristic):
-        for i in range(len(self.characteristics)):
-            if(characteristic == self.characteristics[i][0]):
-                return i
-        return -1
+        return next(
+            (
+                i
+                for i in range(len(self.characteristics))
+                if (characteristic == self.characteristics[i][0])
+            ),
+            -1,
+        )
     
 # Dada una lista de elementos, y una lista de posiciones, remueve todos los elementos de la primera lista
 # que correspondan a esas posiciones
 def Remove_from_List(list, positions_to_remove):
     positions_to_remove.sort()
-    count = 0
-    for i in positions_to_remove:
-        count = count + 1
+    for count, i in enumerate(positions_to_remove, start=1):
         del(list[i - count])
     return list
 

@@ -47,7 +47,7 @@ class LR1Parser(ShiftReduceParser):
     
     def _build_parsing_table(self):
         G = self.G.AugmentedGrammar(True)
-        
+
         automaton = build_LR1_automaton(G)
         for i, node in enumerate(automaton):
             if self.verbose: print(i, '\t', '\n\t '.join(str(x) for x in node.state), '\n')
@@ -69,7 +69,6 @@ class LR1Parser(ShiftReduceParser):
                         LR1Parser._register(self.action, (idx, next_symbol), (ShiftReduceParser.SHIFT, node[next_symbol.Name][0].idx))
                     else:
                         LR1Parser._register(self.goto, (idx, next_symbol), node[next_symbol.Name][0].idx)
-                pass
         
     @staticmethod
     def _register(table, key, value):
